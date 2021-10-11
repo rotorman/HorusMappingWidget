@@ -378,9 +378,8 @@ local function drawTiles(conf,drawLib,utils,width,xmin,xmax,ymin,ymax,color,leve
   -- map overlay
   lcd.drawBitmap(utils.getBitmap("maps_box_380x20"),5,ymin+2*100-20) --160x90  
   -- draw 50m or 150ft line at max zoom
-  lcd.setColor(CUSTOM_COLOR,0xFFFF)
-  lcd.drawLine(xmin+5,ymin+2*100-7,xmin+5+scaleLen,ymin+2*100-7,SOLID,CUSTOM_COLOR)
-  lcd.drawText(xmin+5,ymin+2*100-21,scaleLabel,SMLSIZE+CUSTOM_COLOR)
+  lcd.drawLine(xmin+5,ymin+2*100-7,xmin+5+scaleLen,ymin+2*100-7,SOLID,WHITE)
+  lcd.drawText(xmin+5,ymin+2*100-21,scaleLabel,SMLSIZE+WHITE)
 end
 
 local function getScreenCoordinates(minX,minY,tile_x,tile_y,offset_x,offset_y,level)
@@ -471,8 +470,7 @@ local function drawMap(myWidget,drawLib,conf,telemetry,status,utils,level)
     end
     
     -- draw map tiles
-    lcd.setColor(CUSTOM_COLOR,0xFE60)
-    drawTiles(conf,drawLib,utils,4,minX,maxX,minY,maxY,CUSTOM_COLOR,level)
+    drawTiles(conf,drawLib,utils,4,minX,maxX,minY,maxY,lcd.RGB(0xFF, 0xCE, 0x00),level) -- yellow
     -- draw home
     if telemetry.homeLat ~= nil and telemetry.homeLon ~= nil and homeScreenX ~= nil then
       local homeCode = drawLib.computeOutCode(homeScreenX, homeScreenY, minX+11, minY+10, maxX-11, maxY-10);
@@ -486,20 +484,16 @@ local function drawMap(myWidget,drawLib,conf,telemetry,status,utils,level)
     if estimatedHomeGps.lat ~= nil and estimatedHomeGps.lon ~= nil and estimatedHomeScreenX ~= nil then
       local homeCode = drawLib.computeOutCode(estimatedHomeScreenX, estimatedHomeScreenY, minX+11, minY+10, maxX-11, maxY-10);
       if homeCode == 0 then
-        lcd.setColor(CUSTOM_COLOR,COLOR_RED)
-        lcd.drawRectangle(estimatedHomeScreenX-11,estimatedHomeScreenY-11,20,20,CUSTOM_COLOR)
+        lcd.drawRectangle(estimatedHomeScreenX-11,estimatedHomeScreenY-11,20,20,RED)
       end
     end
     --]]    
     -- draw vehicle
     if myScreenX ~= nil then
-      lcd.setColor(CUSTOM_COLOR,0xFFFF)
-      drawLib.drawRArrow(myScreenX,myScreenY,17-5,telemetry.yaw,CUSTOM_COLOR)
-      lcd.setColor(CUSTOM_COLOR,0x0000)
-      drawLib.drawRArrow(myScreenX,myScreenY,17,telemetry.yaw,CUSTOM_COLOR)
+      drawLib.drawRArrow(myScreenX,myScreenY,17-5,telemetry.yaw,WHITE)
+      drawLib.drawRArrow(myScreenX,myScreenY,17,telemetry.yaw,BLACK)
     end
     -- draw gps trace
-    lcd.setColor(CUSTOM_COLOR,0xFE60)
     for p=0, math.min(sampleCount-1,conf.mapTrailDots-1)
     do
       if p ~= (sampleCount-1)%conf.mapTrailDots then
@@ -510,31 +504,22 @@ local function drawMap(myWidget,drawLib,conf,telemetry,status,utils,level)
             local idx = 4*(y-1)+x
             -- check if tile is on screen
             if tiles[idx] == posHistory[p][1] then
-              lcd.drawFilledRectangle(minX + (x-1)*100 + posHistory[p][2]-1, minY + (y-1)*100 + posHistory[p][3]-1,3,3,CUSTOM_COLOR)
+              lcd.drawFilledRectangle(minX + (x-1)*100 + posHistory[p][2]-1, minY + (y-1)*100 + posHistory[p][3]-1,3,3,lcd.RGB(0xFF, 0xCE, 0x00)) -- yellow
             end
           end
         end
       end
     end
     -- DEBUG
-    lcd.setColor(CUSTOM_COLOR,0xFFFF)
-    lcd.drawText(0+5,18+5,string.format("zoom:%d",level),SMLSIZE+CUSTOM_COLOR)
-    lcd.setColor(CUSTOM_COLOR,0xFFFF)
+    lcd.drawText(0+5,18+5,string.format("zoom:%d",level),SMLSIZE+WHITE)
   end
-  lcd.setColor(CUSTOM_COLOR,0xFFFF)
 end
 
 local function drawCustomSensors(x,customSensors,utils,status)
-    --lcd.setColor(CUSTOM_COLOR,lcd.RGB(0,75,128))
-    --[[
-    lcd.setColor(CUSTOM_COLOR,COLOR_SENSORS)
-    lcd.drawFilledRectangle(0,194,LCD_W,35,CUSTOM_COLOR)
-    --]]
-    lcd.setColor(CUSTOM_COLOR,0x0000)
-    lcd.drawRectangle(400,18,80,201,CUSTOM_COLOR)
+    lcd.drawRectangle(400,18,80,201,BLACK)
     for l=1,3
     do
-      lcd.drawLine(400,18+(l*50),479,18+(l*50),SOLID,CUSTOM_COLOR)
+      lcd.drawLine(400,18+(l*50),479,18+(l*50),SOLID,BLACK)
     end
     local label,data,prec,mult,flags,sensorConfig
     for i=1,10
@@ -549,12 +534,10 @@ local function drawCustomSensors(x,customSensors,utils,status)
           label = string.format("%s(%s)",sensorConfig[1],sensorConfig[4])
         end
         -- draw sensor label
-        lcd.setColor(CUSTOM_COLOR,0x8C71)
-        lcd.drawText(x+customSensorXY[i][1], customSensorXY[i][2],label, SMLSIZE+RIGHT+CUSTOM_COLOR)
+        lcd.drawText(x+customSensorXY[i][1], customSensorXY[i][2],label, SMLSIZE+RIGHT+lcd.RGB(0x8C, 0x8E, 0x8C))
         
         local timerId = string.match(string.lower(sensorConfig[2]), "timer(%d+)")
         if timerId ~= nil then
-          lcd.setColor(CUSTOM_COLOR,0xFFFF)
           -- lua timers are zero based
           if tonumber(timerId) > 0 then
             timerId = tonumber(timerId) -1
@@ -562,7 +545,7 @@ local function drawCustomSensors(x,customSensors,utils,status)
           -- default font size
           flags = sensorConfig[7] == 1 and 0 or MIDSIZE
           local voffset = flags==0 and 6 or 0
-          lcd.drawTimer(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, model.getTimer(timerId).value, flags+CUSTOM_COLOR+RIGHT)
+          lcd.drawTimer(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, model.getTimer(timerId).value, flags+WHITE+RIGHT)
         else
           mult =  sensorConfig[3] == 0 and 1 or ( sensorConfig[3] == 1 and 10 or 100 )
           prec =  mult == 1 and 0 or (mult == 10 and 32 or 48)
@@ -579,21 +562,19 @@ local function drawCustomSensors(x,customSensors,utils,status)
             flags = 0
           end
           
-          local color = 0xFFFF
+          local colr = WHITE
           local sign = sensorConfig[6] == "+" and 1 or -1
           -- max tracking, high values are critical
           if math.abs(value) ~= 0 and status.showMinMaxValues == false then
-            color = ( sensorValue*sign > sensorConfig[9]*sign and lcd.RGB(255,70,0) or (sensorValue*sign > sensorConfig[8]*sign and 0xFE60 or 0xFFFF))
+            colr = ( sensorValue*sign > sensorConfig[9]*sign and lcd.RGB(255,70,0) or (sensorValue*sign > sensorConfig[8]*sign and lcd.RGB(0xFF, 0xCE, 0x00) or lcd.RGB(0xFF, 0xFF, 0xFF)))
           end
-          
-          lcd.setColor(CUSTOM_COLOR,color)
           
           local voffset = flags==0 and 6 or 0
           -- if a lookup table exists use it!
           if customSensors.lookups[i] ~= nil and customSensors.lookups[i][value] ~= nil then
-            lcd.drawText(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, customSensors.lookups[i][value] or value, flags+RIGHT+CUSTOM_COLOR)
+            lcd.drawText(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, customSensors.lookups[i][value] or value, flags+RIGHT+colr)
           else
-            lcd.drawNumber(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, value, flags+RIGHT+prec+CUSTOM_COLOR)
+            lcd.drawNumber(x+customSensorXY[i][3], customSensorXY[i][4]+voffset, value, flags+RIGHT+prec+colr)
           end
         end
       end
@@ -633,13 +614,11 @@ local function draw(myWidget,drawLib,conf,telemetry,status,battery,alarms,frame,
   --drawHud(myWidget,drawLib,conf,telemetry,status,battery,utils)
   utils.drawTopBar()
   -- bottom bar
-  lcd.setColor(CUSTOM_COLOR,0x0000)
-  lcd.drawFilledRectangle(0,200+18,480,LCD_H-(200+18),CUSTOM_COLOR)
+  lcd.drawFilledRectangle(0,200+18,480,LCD_H-(200+18),BLACK)
   -- gps status, draw coordinatyes if good at least once
-  lcd.setColor(CUSTOM_COLOR,0xFFFF)
   if telemetry.lon ~= nil and telemetry.lat ~= nil then
-    lcd.drawText(280,200+18-21,utils.decToDMSFull(telemetry.lat),SMLSIZE+CUSTOM_COLOR+RIGHT)
-    lcd.drawText(380,200+18-21,utils.decToDMSFull(telemetry.lon,telemetry.lat),SMLSIZE+CUSTOM_COLOR+RIGHT)
+    lcd.drawText(280,200+18-21,utils.decToDMSFull(telemetry.lat),SMLSIZE+WHITE+RIGHT)
+    lcd.drawText(380,200+18-21,utils.decToDMSFull(telemetry.lon,telemetry.lat),SMLSIZE+WHITE+RIGHT)
   end
   -- custom sensors
   if customSensors ~= nil then

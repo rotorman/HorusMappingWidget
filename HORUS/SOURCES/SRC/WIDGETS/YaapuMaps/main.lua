@@ -337,7 +337,7 @@ end
   
 local function loadConfig()
   -- load menu library
-  menuLib = dofile(basePath..menuLibFile..".luac")
+  menuLib = dofile(basePath..menuLibFile..".lua")
   menuLib.loadConfig(conf)
   -- unload libraries
   utils.clearTable(menuLib)
@@ -504,29 +504,25 @@ local function getNonZeroMin(v1,v2)
 end
 
 utils.drawTopBar = function()
-  lcd.setColor(CUSTOM_COLOR,0x0000)  
   -- black bar
-  lcd.drawFilledRectangle(0,0, LCD_W, 18, CUSTOM_COLOR)
+  lcd.drawFilledRectangle(0,0, LCD_W, 18, BLACK)
   -- frametype and model name
-  lcd.setColor(CUSTOM_COLOR,0xFFFF)
   if status.modelString ~= nil then
-    lcd.drawText(2, 0, status.modelString, CUSTOM_COLOR)
+    lcd.drawText(2, 0, status.modelString, WHITE)
   end
   local time = getDateTime()
   local strtime = string.format("%02d:%02d:%02d",time.hour,time.min,time.sec)
-  lcd.drawText(LCD_W, 0+4, strtime, SMLSIZE+RIGHT+CUSTOM_COLOR)
+  lcd.drawText(LCD_W, 0+4, strtime, SMLSIZE+RIGHT+WHITE)
   -- RSSI
   if telemetryEnabled() == false then
-    lcd.setColor(CUSTOM_COLOR,0xF800)    
-    lcd.drawText(285-23, 0, "NO TELEM", 0 +CUSTOM_COLOR)
+    lcd.drawText(285-23, 0, "NO TELEM", 0 +lcd.RGB(0xFF, 0x00, 0x00))
   else
-    lcd.drawText(285, 0, "RS:", 0 +CUSTOM_COLOR)
-    lcd.drawText(285 + 30,0, getRSSI(), 0 +CUSTOM_COLOR)  
+    lcd.drawText(285, 0, "RS:", WHITE)
+    lcd.drawText(285 + 30,0, getRSSI(), WHITE)
   end
-  lcd.setColor(CUSTOM_COLOR,0xFFFF)    
   -- tx voltage
   local vtx = string.format("Tx:%.1fv",getValue(getFieldInfo("tx-voltage").id))
-  lcd.drawText(350,0, vtx, 0+CUSTOM_COLOR)
+  lcd.drawText(350,0, vtx, WHITE)
 end
 
 local function reset()
@@ -730,9 +726,8 @@ local function update(myWidget, options)
 end
 
 local function fullScreenRequired(myWidget)
-  lcd.setColor(CUSTOM_COLOR,lcd.RGB(255, 0, 0))
-  lcd.drawText(myWidget.zone.x,myWidget.zone.y,"YaapuMaps requires",SMLSIZE+CUSTOM_COLOR)
-  lcd.drawText(myWidget.zone.x,myWidget.zone.y+16,"full screen",SMLSIZE+CUSTOM_COLOR)
+  lcd.drawText(myWidget.zone.x,myWidget.zone.y,"YaapuMaps requires",SMLSIZE+lcd.RGB(255, 0, 0))
+  lcd.drawText(myWidget.zone.x,myWidget.zone.y+16,"full screen",SMLSIZE+lcd.RGB(255, 0, 0))
 end
 
 
@@ -767,8 +762,7 @@ local function drawFullScreen(myWidget)
   
   backgroundTasks(myWidget)
   
-  lcd.setColor(CUSTOM_COLOR, 0x0AB1)
-  lcd.clear(CUSTOM_COLOR)
+  lcd.clear(lcd.RGB(0x08, 0x55, 0x8C)) -- 08558c
     
   if mapLayout ~= nil then
     mapLayout.draw(myWidget,drawLib,conf,telemetry,status,battery,alarms,frame,utils,customSensors,gpsStatuses,leftPanel,centerPanel,rightPanel)
@@ -789,10 +783,9 @@ local function drawFullScreen(myWidget)
   end
   
   loadCycle=(loadCycle+1)%8
-  lcd.setColor(CUSTOM_COLOR,lcd.RGB(255,0,0))
   maxmem = math.max(maxmem,collectgarbage("count")*1024)
   -- test with absolute coordinates
-  lcd.drawNumber(480,LCD_H-14,maxmem,SMLSIZE+MENU_TITLE_COLOR+RIGHT)
+  lcd.drawNumber(480,LCD_H-14,maxmem,SMLSIZE+WHITE+RIGHT)
   collectgarbage()
   collectgarbage()
 end
